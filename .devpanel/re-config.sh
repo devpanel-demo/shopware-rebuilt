@@ -29,6 +29,8 @@ if [[ ! -n "$WEB_ROOT" ]]; then
   export WEB_ROOT=$APP_ROOT
 fi
 
+MYSQL_CONN="-h$DB_HOST -P$DB_PORT -u$DB_USER -p$DB_PASSWORD"
+
 cd $APP_ROOT
 cp -r $APP_ROOT/.devpanel/.gitignore $APP_ROOT/.gitignore
 #== Composer install.
@@ -57,11 +59,14 @@ if [[ -f "$APP_ROOT/.devpanel/dumps/db.sql.tgz" ]]; then
   cd $APP_ROOT/.devpanel/dumps
   tar -xvzf db.sql.tgz
 
-  mysql -h$DB_HOST -P$DB_PORT -u$DB_USER -p$DB_PASSWORD $DB_NAME < db.sql
-  mysql -h$DB_HOST -P$DB_PORT -u$DB_USER -p$DB_PASSWORD $DB_NAME -e "UPDATE sales_channel_domain SET url='https://$DP_HOSTNAME' WHERE url='http://localhost' OR url='https://localhost';"
+  mysql $MYSQL_CONN $DB_NAME < db.sql
+  mysql $MYSQL_CONN $DB_NAME -e "SELECT url FROM sales_channel_domain"
+  source_domain=$(grep -m1 -v '^[[:space:]]*$' $APP_ROOT/.devpanel/dumps/source_domain.txt)
+
+  mysql $MYSQL_CONN $DB_NAME -e "UPDATE sales_channel_domain SET url='https://$DP_HOSTNAME' WHERE url IN ('http://localhost', 'https://localhost', '$source_domain');"
   rm -rf $APP_ROOT/.devpanel/dumps/*
 fi
-mysql -h"$DB_HOST" -P"$DB_PORT" -u"$DB_USER" -p"$DB_PASSWORD" "$DB_NAME" -e "
+mysql $MYSQL_CONN $DB_NAME -e "
   UPDATE sales_channel_domain
   SET url = REPLACE(url, 'http://', 'https://');"
 

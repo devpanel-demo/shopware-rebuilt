@@ -181,3 +181,6 @@ tar czf $DUMPS_DIR/files.tgz -C $WORK_DIR/public \
   --exclude='index.php' \
   --exclude='maintenance.html' \
   .
+
+echo "Write https://$DP_HOSTNAME source domain into file "
+echo "https://$DP_HOSTNAME" > $APP_ROOT/.devpanel/dumps/source_domain.txt

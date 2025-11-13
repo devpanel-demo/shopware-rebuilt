@@ -16,18 +16,24 @@
 # ----------------------------------------------------------------------
 
 #== Import database
-if [[ $(mysql -h$DB_HOST -P$DB_PORT -u$DB_USER -p$DB_PASSWORD $DB_NAME -e "show tables;") == '' ]]; then
+MYSQL_CONN="-h$DB_HOST -P$DB_PORT -u$DB_USER -p$DB_PASSWORD"
+source_domain=$(grep -m1 -v '^[[:space:]]*$' $APP_ROOT/.devpanel/dumps/source_domain.txt)
+
+if [[ $(mysql $MYSQL_CONN $DB_NAME -e "show tables;") == '' ]]; then
   if [[ -f "$APP_ROOT/.devpanel/dumps/db.sql.tgz" ]]; then
     echo 'Import mysql file ...'
     cd $APP_ROOT/.devpanel/dumps
     tar -xvzf db.sql.tgz
 
-    mysql -h$DB_HOST -P$DB_PORT -u$DB_USER -p$DB_PASSWORD $DB_NAME < db.sql
-    mysql -h$DB_HOST -P$DB_PORT -u$DB_USER -p$DB_PASSWORD $DB_NAME -e "UPDATE sales_channel_domain SET url='https://$DP_HOSTNAME' WHERE url='http://localhost' OR url='https://localhost';"
+    mysql $MYSQL_CONN $DB_NAME < db.sql
+    mysql $MYSQL_CONN $DB_NAME -e "UPDATE sales_channel_domain SET url='https://$DP_HOSTNAME' WHERE url IN ('http://localhost', 'https://localhost', '$source_domain');"
+
     rm -rf $APP_ROOT/.devpanel/dumps/*
   fi
+else
+  echo "Have tables"
 fi
-mysql -h"$DB_HOST" -P"$DB_PORT" -u"$DB_USER" -p"$DB_PASSWORD" "$DB_NAME" -e "
+mysql $MYSQL_CONN $DB_NAME -e "
   UPDATE sales_channel_domain
   SET url = REPLACE(url, 'http://', 'https://');"
 
