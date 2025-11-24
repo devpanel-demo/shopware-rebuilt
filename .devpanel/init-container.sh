@@ -28,7 +28,7 @@ if [[ $(mysql $MYSQL_CONN $DB_NAME -e "show tables;") == '' ]]; then
     mysql $MYSQL_CONN $DB_NAME < db.sql
     mysql $MYSQL_CONN $DB_NAME -e "UPDATE sales_channel_domain SET url='https://$DP_HOSTNAME' WHERE url IN ('http://localhost', 'https://localhost', '$source_domain');"
 
-    # rm -rf $APP_ROOT/.devpanel/dumps/*
+    rm -rf $APP_ROOT/.devpanel/dumps/*
   fi
 fi
 mysql $MYSQL_CONN $DB_NAME -e "
