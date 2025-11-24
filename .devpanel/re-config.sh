@@ -63,7 +63,7 @@ if [[ -f "$APP_ROOT/.devpanel/dumps/db.sql.tgz" ]]; then
   source_domain=$(grep -m1 -v '^[[:space:]]*$' $APP_ROOT/.devpanel/dumps/source_domain.txt)
 
   mysql $MYSQL_CONN $DB_NAME -e "UPDATE sales_channel_domain SET url='https://$DP_HOSTNAME' WHERE url IN ('http://localhost', 'https://localhost', '$source_domain');"
-  rm -rf $APP_ROOT/.devpanel/dumps/*
+  # rm -rf $APP_ROOT/.devpanel/dumps/*
 fi
 mysql $MYSQL_CONN $DB_NAME -e "
   UPDATE sales_channel_domain
